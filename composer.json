@@ -1,0 +1,28 @@
+{
+    "name": "jenko/sunscreen",
+    "description": "Protecting your web app from the harmful rays of external dependencies.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ian Jenkins",
+            "email": "ian@jenkins-web.co.uk"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+    },
+    "scripts": {
+        "post-package-install": [
+            "Jenko\\Sunscreen\\Sunscreen::postPackageInstall"
+        ]
+    },
+    "autoload": {
+        "psr-4": {"Jenko\\Sunscreen\\": "src/"}
+    },
+    "extra": {
+        "sunscreen": {
+            "interface": "Jenko\\Sunscreen\\SunscreenInterface"
+        }
+    }
+}
