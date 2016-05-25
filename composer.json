@@ -23,7 +23,9 @@
     },
     "extra": {
         "sunscreen": {
-            "interface": "Jenko\\Sunscreen\\SunscreenInterface"
+            "interfaces": [
+                "Jenko\\Sunscreen\\SunscreenInterface"
+            ]
         }
     }
 }
