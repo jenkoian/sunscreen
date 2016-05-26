@@ -7,7 +7,7 @@ interface ProcessorInterface
     /**
      * @param bool $asString
      *
-     * @return mixed
+     * @return string|bool
      */
     public function generate($asString = false);
 }

@@ -9,6 +9,8 @@ use Jenko\Sunscreen\Processor\InterfaceProcessor;
 
 class Sunscreen implements SunscreenInterface
 {
+    const DS = DIRECTORY_SEPARATOR;
+
     /**
      * @param PackageEvent $event
      */
@@ -17,7 +19,7 @@ class Sunscreen implements SunscreenInterface
         $mainPackage = $event->getComposer()->getPackage();
         $installedPackage = $event->getOperation()->getPackage();
         $extra = $installedPackage->getExtra();
-        $baseDir = $event->getComposer()->getConfig()->get('vendor-dir') . '/..';
+        $baseDir = $event->getComposer()->getConfig()->get('vendor-dir') . self::DS  . '..';
 
         $mainNamespace = self::extractNamespaceFromPackage($mainPackage);
         $src = self::extractSourceDirectoryFromPackage($mainPackage);
@@ -42,29 +44,21 @@ class Sunscreen implements SunscreenInterface
 
         if (!empty($interfaces)) {
             foreach ($interfaces as $interface) {
-                $interfaceProcessor = new InterfaceProcessor(
-                    $interface,
-                    $mainNamespace,
-                    $baseDir . DIRECTORY_SEPARATOR . $src
-                );
+                $interfaceProcessor = new InterfaceProcessor($interface, $mainNamespace, $baseDir . self::DS . $src);
                 $interfaceProcessor->generate();
 
-                $adapterProcessor = new AdapterProcessor(
-                    $interface,
-                    $mainNamespace,
-                    $baseDir . DIRECTORY_SEPARATOR . $src
-                );
+                $adapterProcessor = new AdapterProcessor($interface, $mainNamespace, $baseDir . self::DS . $src);
                 $adapterProcessor->generate();
             }
         }
 
         if (!empty($classes)) {
             foreach ($classes as $class) {
-                $classProcessor = new ClassProcessor($class, $mainNamespace, $baseDir . DIRECTORY_SEPARATOR . $src);
+                $classProcessor = new ClassProcessor($class, $mainNamespace, $baseDir . self::DS . $src);
                 $classProcessor->generate();
 
-                $adapterProcessor = new AdapterProcessor($class, $mainNamespace, $baseDir . DIRECTORY_SEPARATOR . $src);
-                $adapterProcessor->generate();                
+                $adapterProcessor = new AdapterProcessor($class, $mainNamespace, $baseDir . self::DS . $src);
+                $adapterProcessor->generate();
             }
         }
     }
