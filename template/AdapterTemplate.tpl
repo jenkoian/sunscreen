@@ -3,7 +3,7 @@
 namespace <namespace>;
 
 use <interfaceFqn>;
-use <namespace>\<interfaceName> as Local<interfaceName>
+use <namespace>\<interfaceName> as Local<interfaceName>;
 
 final class <className> implements Local<interfaceName>
 {

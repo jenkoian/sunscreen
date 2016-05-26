@@ -15,13 +15,20 @@ class ClassProcessor implements ProcessorInterface
     private $namespace;
 
     /**
+     * @var string
+     */
+    private $fileLocation;
+
+    /**
      * @param string $classFqn
      * @param string $namespace
+     * @param string $fileLocation
      */
-    public function __construct($classFqn, $namespace)
+    public function __construct($classFqn, $namespace, $fileLocation)
     {
         $this->classFqn = $classFqn;
         $this->namespace = $namespace;
+        $this->fileLocation = $fileLocation;
     }
 
     /**
@@ -46,6 +53,13 @@ class ClassProcessor implements ProcessorInterface
             ]
         );
 
-        return $classString;
+        if ($asString === true) {
+            return $classString;
+        }
+
+        return (bool)file_put_contents(
+            $this->fileLocation . $class . '.php',
+            $classString
+        );
     }
 }

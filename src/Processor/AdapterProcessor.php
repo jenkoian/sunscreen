@@ -15,13 +15,20 @@ class AdapterProcessor implements ProcessorInterface
     private $namespace;
 
     /**
+     * @var string
+     */
+    private $fileLocation;
+
+    /**
      * @param string $interfaceFqn
      * @param string $namespace
+     * @param string $fileLocation
      */
-    public function __construct($interfaceFqn, $namespace)
+    public function __construct($interfaceFqn, $namespace, $fileLocation)
     {
         $this->interfaceFqn = $interfaceFqn;
         $this->namespace = $namespace;
+        $this->fileLocation = $fileLocation;
     }
 
     /**
@@ -32,6 +39,7 @@ class AdapterProcessor implements ProcessorInterface
         $reflected = new \ReflectionClass($this->interfaceFqn);
 
         $interfaceName = $reflected->getShortName();
+        $className = $this->makeClassName($interfaceName);
         $interfaceProperty = lcfirst($interfaceName);
 
         // TODO: Inject a factory into class then create methods processor through that.
@@ -42,7 +50,7 @@ class AdapterProcessor implements ProcessorInterface
             [
                 '<namespace>'  => $this->namespace,
                 '<interfaceFqn>' => $this->interfaceFqn,
-                '<className>' => $this->makeClassName($interfaceName),
+                '<className>' => $className,
                 '<interfaceName>' => $interfaceName,
                 '<interfaceProperty>' => $interfaceProperty,
                 '<methods>' => $methodsProcessor->generate(true)
@@ -53,7 +61,10 @@ class AdapterProcessor implements ProcessorInterface
             return $adapterString;
         }
 
-        // TODO: Generate file 
+        return (bool)file_put_contents(
+            $this->fileLocation . $className . '.php',
+            $adapterString
+        );
     }
     
     private function makeClassName($interfaceName)

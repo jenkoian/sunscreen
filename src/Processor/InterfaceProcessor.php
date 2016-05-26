@@ -15,13 +15,20 @@ class InterfaceProcessor implements ProcessorInterface
     private $namespace;
 
     /**
+     * @var string
+     */
+    private $fileLocation;
+
+    /**
      * @param string $interfaceFqn
      * @param string $namespace
+     * @param string $fileLocation
      */
-    public function __construct($interfaceFqn, $namespace)
+    public function __construct($interfaceFqn, $namespace, $fileLocation)
     {
         $this->interfaceFqn = $interfaceFqn;
         $this->namespace = $namespace;
+        $this->fileLocation = $fileLocation;
     }
 
     /**
@@ -50,7 +57,9 @@ class InterfaceProcessor implements ProcessorInterface
             return $interfaceString;
         }
 
-        // TODO: Generate file
-        return true;
+        return (bool)file_put_contents(
+            $this->fileLocation . $interface . '.php',
+            $interfaceString
+        );
     }
 }

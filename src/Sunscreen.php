@@ -7,9 +7,6 @@ use Jenko\Sunscreen\Processor\AdapterProcessor;
 use Jenko\Sunscreen\Processor\ClassProcessor;
 use Jenko\Sunscreen\Processor\InterfaceProcessor;
 
-/**
- * TODO: Tidy this up, extract loads of it out to static helpers etc.
- */
 class Sunscreen implements SunscreenInterface
 {
     /**
@@ -20,14 +17,22 @@ class Sunscreen implements SunscreenInterface
         $mainPackage = $event->getComposer()->getPackage();
         $installedPackage = $event->getOperation()->getPackage();
         $extra = $installedPackage->getExtra();
+        $baseDir = $event->getComposer()->getConfig()->get('vendor-dir') . '/..';
+
+        $mainNamespace = self::extractNamespaceFromPackage($mainPackage);
+        $src = self::extractSourceDirectoryFromPackage($mainPackage);
+        if (empty($mainNamespace)) {
+            // TODO: Write to console that no namespace was found.
+            return;
+        }
 
         if (isset($extra['sunscreen'])) {
             $interfaces = self::configuredInterfaces($extra['sunscreen']);
             $classes = self::configuredClasses($extra['sunscreen']);
         } else {
-            $interfaces = self::guessedInterfaces($installedPackage);
+            $interfaces = self::guessedInterfaces($installedPackage, $mainNamespace);
+            // TODO: Add guessedClasses functionality
             $classes = [];
-            //$classes = self::guessedClasses($installedPackage);
         }
 
         if (empty($interfaces) && empty($classes)) {
@@ -35,24 +40,30 @@ class Sunscreen implements SunscreenInterface
             return;
         }
 
-        $mainNamespace = self::mainNamespace($mainPackage);
-
         if (!empty($interfaces)) {
             foreach ($interfaces as $interface) {
-                $interfaceProcessor = new InterfaceProcessor($interface, $mainNamespace);
+                $interfaceProcessor = new InterfaceProcessor(
+                    $interface,
+                    $mainNamespace,
+                    $baseDir . DIRECTORY_SEPARATOR . $src
+                );
                 $interfaceProcessor->generate();
 
-                $adapterProcessor = new AdapterProcessor($interface, $mainNamespace);
+                $adapterProcessor = new AdapterProcessor(
+                    $interface,
+                    $mainNamespace,
+                    $baseDir . DIRECTORY_SEPARATOR . $src
+                );
                 $adapterProcessor->generate();
             }
         }
 
         if (!empty($classes)) {
             foreach ($classes as $class) {
-                $classProcessor = new ClassProcessor($class, self::mainNamespace($mainPackage));
+                $classProcessor = new ClassProcessor($class, $mainNamespace, $baseDir . DIRECTORY_SEPARATOR . $src);
                 $classProcessor->generate();
 
-                $adapterProcessor = new AdapterProcessor($class, $mainNamespace);
+                $adapterProcessor = new AdapterProcessor($class, $mainNamespace, $baseDir . DIRECTORY_SEPARATOR . $src);
                 $adapterProcessor->generate();                
             }
         }
@@ -82,41 +93,67 @@ class Sunscreen implements SunscreenInterface
         }
 
         return [];
-    }    
+    }
 
     /**
      * TODO: Support multiple interfaces/classes
-     * TODO: Support psr-0 too
      * @param $package
      * @return null|string
      */
     private static function guessedInterfaces($package)
     {
-        $psr4 = $package->getAutoload()['psr-4'];
-        $namespace = key($psr4);
+        $namespace = self::extractNamespaceFromPackage($package);
+        $src = self::extractSourceDirectoryFromPackage($package);
+
         $packageParts = explode('\\', rtrim($namespace, '\\'));
 
-        $filename =  __DIR__ . '/../vendor/' . $package->getName() . '/' . reset($psr4) . end($packageParts) . 'Interface.php';
+        $filename =  __DIR__ . '/../vendor/' . $package->getName() . '/' . $src . end($packageParts) . 'Interface.php';
 
         if (is_file($filename)) {
-            return [$namespace . end($packageParts) . 'Interface'];
+            return [$namespace . '\\' . end($packageParts) . 'Interface'];
         }
 
-        $filename =  __DIR__ . '/../vendor/' . $package->getName() . '/' . reset($psr4) . end($packageParts) . '.php';
+        $filename =  __DIR__ . '/../vendor/' . $package->getName() . '/' . $src . end($packageParts) . '.php';
 
-        return is_file($filename) ? [$namespace . end($packageParts)] : [];
+        return is_file($filename) ? [$namespace . '\\' . end($packageParts)] : [];
     }
 
     /**
-     * TODO: Support psr-0 too.
-     * @param $mainPackage
-     * @return mixed
+     * @param $package
+     * @return string
      */
-    private static function mainNamespace($mainPackage)
+    private static function extractNamespaceFromPackage($package)
     {
-        $psr4 = $mainPackage->getAutoload()['psr-4'];
+        $autoload = $package->getAutoload();
 
-        return rtrim(key($psr4), '\\');
+        if (isset($autoload['psr-4'])) {
+            return rtrim(key($autoload['psr-4']), '\\');
+        }
+
+        if (isset($autoload['psr-0'])) {
+            return rtrim(key($autoload['psr-0']), '\\');
+        }
+
+        return '';
+    }
+
+    /**
+     * @param $package
+     * @return string
+     */
+    private static function extractSourceDirectoryFromPackage($package)
+    {
+        $autoload = $package->getAutoload();
+
+        if (isset($autoload['psr-4'])) {
+            return reset($autoload['psr-4']);
+        }
+
+        if (isset($autoload['psr-0'])) {
+            return reset($autoload['psr-0']);
+        }
+
+        return '';
     }
 }
 
