@@ -31,7 +31,4 @@
         <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
         <log type="coverage-clover" target="./clover.xml"/>
     </logging>
-    <php>
-        <env name="BASE_DIR" value="."/>
-    </php>
 </phpunit>

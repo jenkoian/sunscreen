@@ -1,4 +1,4 @@
-# Sunscreen
+# Sunscreen [![Build Status](https://travis-ci.org/jenkoian/sunscreen.svg?branch=master)](https://travis-ci.org/jenkoian/sunscreen)
 
 > Protecting you from the harmful rays of third party dependencies.
 

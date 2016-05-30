@@ -15,8 +15,6 @@ class AbstractClassGuesser extends AbstractGuesser
         $src = Util::extractSourceDirectoryFromPackage($package);
         $dir = $this->vendorDir . Util::DS . $package->getName() . Util::DS . $src;
 
-        echo $dir . "\n";
-
         $classes = [];
         foreach (glob($dir . "Abstract*.php") as $filename) {
             $namespace = Util::extractNamespaceFromPackage($package);
