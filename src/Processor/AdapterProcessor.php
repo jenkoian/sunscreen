@@ -7,6 +7,11 @@ class AdapterProcessor implements ProcessorInterface
     /**
      * @var string
      */
+    const DIRECTORY = 'Adapters';
+
+    /**
+     * @var string
+     */
     private $interfaceFqn;
 
     /**
@@ -61,8 +66,14 @@ class AdapterProcessor implements ProcessorInterface
             return $adapterString;
         }
 
+        $dir = $this->fileLocation . self::DIRECTORY;
+
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
         return (bool)file_put_contents(
-            $this->fileLocation . $className . '.php',
+            $dir . DIRECTORY_SEPARATOR . $className . '.php',
             $adapterString
         );
     }

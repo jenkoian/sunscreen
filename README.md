@@ -21,7 +21,7 @@ as is. Therefore, once this library has done it's thing you should definitely re
 ## Installation
 
 ```
-composer require jenko/sunscreen
+composer require jenko/sunscreen --dev
 ```
 
 Then add this to your `composer.json`:

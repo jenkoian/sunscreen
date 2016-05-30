@@ -1,4 +1,5 @@
-/**
+
+    /**
      * {@inheritdoc}
      */
     public function <methodName>(<parameters>)

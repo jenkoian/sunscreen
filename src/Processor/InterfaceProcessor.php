@@ -7,6 +7,11 @@ class InterfaceProcessor implements ProcessorInterface
     /**
      * @var string
      */
+    const DIRECTORY = 'Contracts';
+    
+    /**
+     * @var string
+     */
     private $interfaceFqn;
 
     /**
@@ -57,8 +62,14 @@ class InterfaceProcessor implements ProcessorInterface
             return $interfaceString;
         }
 
+        $dir = $this->fileLocation . self::DIRECTORY;
+
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
         return (bool)file_put_contents(
-            $this->fileLocation . $interface . '.php',
+            $dir . DIRECTORY_SEPARATOR . $interface.'.php',
             $interfaceString
         );
     }

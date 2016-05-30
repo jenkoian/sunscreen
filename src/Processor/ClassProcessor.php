@@ -7,6 +7,11 @@ class ClassProcessor implements ProcessorInterface
     /**
      * @var string
      */
+    const DIRECTORY = 'Contracts';
+    
+    /**
+     * @var string
+     */
     private $classFqn;
 
     /**
@@ -56,9 +61,15 @@ class ClassProcessor implements ProcessorInterface
         if ($asString === true) {
             return $classString;
         }
+        
+        $dir = $this->fileLocation . self::DIRECTORY;
+
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }        
 
         return (bool)file_put_contents(
-            $this->fileLocation . $class . '.php',
+            $dir . DIRECTORY_SEPARATOR . $class . '.php',
             $classString
         );
     }

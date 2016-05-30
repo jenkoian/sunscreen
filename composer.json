@@ -27,5 +27,8 @@
                 "Jenko\\Sunscreen\\SunscreenInterface"
             ]
         }
+    },
+    "require-dev": {
+        "composer/composer": "~1.1"
     }
 }

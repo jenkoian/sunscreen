@@ -51,10 +51,6 @@ class AdapterMethodsProcessor implements ProcessorInterface
                     '<interfaceProperty>' => $this->interfaceProperty
                 ]
             );
-
-            if ($k !== count($this->methods)-1) {
-                $methodsString .= "\n";
-            }
         }
 
         if ($asString === true) {

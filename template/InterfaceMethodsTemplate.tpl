@@ -1,2 +1,3 @@
-<docBlock>
+
+    <docBlock>
     public function <methodName>(<parameters>);

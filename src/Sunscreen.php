@@ -3,26 +3,28 @@
 namespace Jenko\Sunscreen;
 
 use Composer\Installer\PackageEvent;
+use Jenko\Sunscreen\Guesser\AbstractClassGuesser;
+use Jenko\Sunscreen\Guesser\InterfaceGuesser;
 use Jenko\Sunscreen\Processor\AdapterProcessor;
 use Jenko\Sunscreen\Processor\ClassProcessor;
 use Jenko\Sunscreen\Processor\InterfaceProcessor;
 
 class Sunscreen implements SunscreenInterface
 {
-    const DS = DIRECTORY_SEPARATOR;
-
     /**
      * @param PackageEvent $event
+     *
+     * @return mixed|void
      */
     public static function postPackageInstall(PackageEvent $event)
     {
         $mainPackage = $event->getComposer()->getPackage();
         $installedPackage = $event->getOperation()->getPackage();
         $extra = $installedPackage->getExtra();
-        $baseDir = $event->getComposer()->getConfig()->get('vendor-dir') . self::DS  . '..';
+        $baseDir = $event->getComposer()->getConfig()->get('vendor-dir') . Util::DS  . '..';
 
-        $mainNamespace = self::extractNamespaceFromPackage($mainPackage);
-        $src = self::extractSourceDirectoryFromPackage($mainPackage);
+        $mainNamespace = Util::extractNamespaceFromPackage($mainPackage);
+        $src = Util::extractSourceDirectoryFromPackage($mainPackage);
         if (empty($mainNamespace)) {
             // TODO: Write to console that no namespace was found.
             return;
@@ -32,9 +34,10 @@ class Sunscreen implements SunscreenInterface
             $interfaces = self::configuredInterfaces($extra['sunscreen']);
             $classes = self::configuredClasses($extra['sunscreen']);
         } else {
-            $interfaces = self::guessedInterfaces($installedPackage, $mainNamespace);
-            // TODO: Add guessedClasses functionality
-            $classes = [];
+            $interfaceGuesser = new InterfaceGuesser();
+            $interfaces = $interfaceGuesser->guess($installedPackage);
+            $classGuesser = new AbstractClassGuesser();
+            $classes = $classGuesser->guess($installedPackage);
         }
 
         if (empty($interfaces) && empty($classes)) {
@@ -44,20 +47,20 @@ class Sunscreen implements SunscreenInterface
 
         if (!empty($interfaces)) {
             foreach ($interfaces as $interface) {
-                $interfaceProcessor = new InterfaceProcessor($interface, $mainNamespace, $baseDir . self::DS . $src);
+                $interfaceProcessor = new InterfaceProcessor($interface, $mainNamespace, $baseDir . Util::DS . $src);
                 $interfaceProcessor->generate();
 
-                $adapterProcessor = new AdapterProcessor($interface, $mainNamespace, $baseDir . self::DS . $src);
+                $adapterProcessor = new AdapterProcessor($interface, $mainNamespace, $baseDir . Util::DS . $src);
                 $adapterProcessor->generate();
             }
         }
 
         if (!empty($classes)) {
             foreach ($classes as $class) {
-                $classProcessor = new ClassProcessor($class, $mainNamespace, $baseDir . self::DS . $src);
+                $classProcessor = new ClassProcessor($class, $mainNamespace, $baseDir . Util::DS . $src);
                 $classProcessor->generate();
 
-                $adapterProcessor = new AdapterProcessor($class, $mainNamespace, $baseDir . self::DS . $src);
+                $adapterProcessor = new AdapterProcessor($class, $mainNamespace, $baseDir . Util::DS . $src);
                 $adapterProcessor->generate();
             }
         }
@@ -87,67 +90,6 @@ class Sunscreen implements SunscreenInterface
         }
 
         return [];
-    }
-
-    /**
-     * TODO: Support multiple interfaces/classes
-     * @param $package
-     * @return null|string
-     */
-    private static function guessedInterfaces($package)
-    {
-        $namespace = self::extractNamespaceFromPackage($package);
-        $src = self::extractSourceDirectoryFromPackage($package);
-
-        $packageParts = explode('\\', rtrim($namespace, '\\'));
-
-        $filename =  __DIR__ . '/../vendor/' . $package->getName() . '/' . $src . end($packageParts) . 'Interface.php';
-
-        if (is_file($filename)) {
-            return [$namespace . '\\' . end($packageParts) . 'Interface'];
-        }
-
-        $filename =  __DIR__ . '/../vendor/' . $package->getName() . '/' . $src . end($packageParts) . '.php';
-
-        return is_file($filename) ? [$namespace . '\\' . end($packageParts)] : [];
-    }
-
-    /**
-     * @param $package
-     * @return string
-     */
-    private static function extractNamespaceFromPackage($package)
-    {
-        $autoload = $package->getAutoload();
-
-        if (isset($autoload['psr-4'])) {
-            return rtrim(key($autoload['psr-4']), '\\');
-        }
-
-        if (isset($autoload['psr-0'])) {
-            return rtrim(key($autoload['psr-0']), '\\');
-        }
-
-        return '';
-    }
-
-    /**
-     * @param $package
-     * @return string
-     */
-    private static function extractSourceDirectoryFromPackage($package)
-    {
-        $autoload = $package->getAutoload();
-
-        if (isset($autoload['psr-4'])) {
-            return reset($autoload['psr-4']);
-        }
-
-        if (isset($autoload['psr-0'])) {
-            return reset($autoload['psr-0']);
-        }
-
-        return '';
     }
 }
 
