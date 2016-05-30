@@ -19,6 +19,7 @@ class AbstractClassGuesserTest extends \PHPUnit_Framework_TestCase
         $package->setAutoload($autoload);
 
         $vendorDir = __DIR__ . Util::DS . '..' . Util::DS . 'Fixtures' . Util::DS . 'vendor';
+        echo $vendorDir . "\n";
         $guesser = new AbstractClassGuesser($vendorDir);
 
         self::assertEquals($expectedClasses, $guesser->guess($package));
