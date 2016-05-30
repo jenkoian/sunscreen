@@ -16,7 +16,7 @@ class AdapterMethodsProcessor implements ProcessorInterface
 
     /**
      * @param array $methods
-     * @param $interfaceProperty
+     * @param string $interfaceProperty
      */
     public function __construct(array $methods, $interfaceProperty)
     {
@@ -27,7 +27,7 @@ class AdapterMethodsProcessor implements ProcessorInterface
     /**
      * {@inheritdoc}
      */
-    public function generate($asString = false)
+    public function process($asString = false)
     {
         $methodsString = '';
         /** @var \ReflectionMethod $method */
@@ -57,6 +57,6 @@ class AdapterMethodsProcessor implements ProcessorInterface
             return $methodsString;   
         }
         
-        // TODO: Generate file or throw exception?
+        throw new \LogicException('Adapter methods cannot be generated as a file.');
     }
 }

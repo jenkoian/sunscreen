@@ -1,3 +1,3 @@
 
     <docBlock>
-    public function <methodName>(<parameters>);
+    <abstract>public function <methodName>(<parameters>);

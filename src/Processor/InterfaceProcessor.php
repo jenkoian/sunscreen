@@ -2,6 +2,8 @@
 
 namespace Jenko\Sunscreen\Processor;
 
+use Jenko\Sunscreen\Util;
+
 class InterfaceProcessor implements ProcessorInterface 
 {
     /**
@@ -39,7 +41,7 @@ class InterfaceProcessor implements ProcessorInterface
     /**
      * {@inheritdoc}
      */
-    public function generate($asString = false)
+    public function process($asString = false)
     {
         $reflected = new \ReflectionClass($this->interfaceFqn);
         
@@ -47,7 +49,7 @@ class InterfaceProcessor implements ProcessorInterface
         $methodsProcessor = new InterfaceMethodsProcessor($reflected->getMethods());
 
         $interface = $reflected->getShortName();
-        $methods = $methodsProcessor->generate(true);
+        $methods = $methodsProcessor->process(true);
 
         $interfaceString = strtr(
             file_get_contents(__DIR__ . '/../../template/InterfaceTemplate.tpl'),
@@ -62,14 +64,14 @@ class InterfaceProcessor implements ProcessorInterface
             return $interfaceString;
         }
 
-        $dir = $this->fileLocation . self::DIRECTORY;
+        $dir = $this->fileLocation . Util::DS . self::DIRECTORY;
 
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
 
         return (bool)file_put_contents(
-            $dir . DIRECTORY_SEPARATOR . $interface.'.php',
+            $dir . Util::DS . $interface.'.php',
             $interfaceString
         );
     }

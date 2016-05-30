@@ -10,17 +10,16 @@ final class DoctrineInstantiator implements LocalInstantiatorInterface
     /**
      * @var InstantiatorInterface
      */
-     private $instantiatorInterface;
+    private $instantiatorInterface;
 
-     /**
-      * @var InstantiatorInterface $instantiatorInterface
-      */
-     public function __construct(InstantiatorInterface $instantiatorInterface)
-     {
+    /**
+     * @var InstantiatorInterface $instantiatorInterface
+     */
+    public function __construct(InstantiatorInterface $instantiatorInterface)
+    {
         $this->instantiatorInterface = $instantiatorInterface;
-     }
-
-     
+    }
+    
     /**
      * {@inheritdoc}
      */

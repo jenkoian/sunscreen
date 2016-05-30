@@ -39,13 +39,29 @@ class Util
         $autoload = $package->getAutoload();
 
         if (isset($autoload['psr-4'])) {
-            return reset($autoload['psr-4']);
+            $src = reset($autoload['psr-4']);
+            return is_array($src) ? $src[0] : $src;
         }
 
         if (isset($autoload['psr-0'])) {
-            return reset($autoload['psr-0']);
+            $src = reset($autoload['psr-0']);
+            return is_array($src) ? $src[0] : $src;
         }
 
         return '';
+    }
+
+    /**
+     * @param $interfaceFqn
+     *
+     * @return string
+     */
+    public static function makeClassName($interfaceFqn)
+    {
+        $reflected = new \ReflectionClass($interfaceFqn);
+        $interfaceName = $reflected->getShortName();        
+        $interfaceFqnParts = explode('\\', $interfaceFqn);
+        
+        return reset($interfaceFqnParts) . str_replace('Interface', '', $interfaceName);
     }
 }

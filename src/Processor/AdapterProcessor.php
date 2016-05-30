@@ -2,6 +2,8 @@
 
 namespace Jenko\Sunscreen\Processor;
 
+use Jenko\Sunscreen\Util;
+
 class AdapterProcessor implements ProcessorInterface
 {
     /**
@@ -39,12 +41,12 @@ class AdapterProcessor implements ProcessorInterface
     /**
      * {@inheritdoc}
      */
-    public function generate($asString = false)
+    public function process($asString = false)
     {
         $reflected = new \ReflectionClass($this->interfaceFqn);
 
         $interfaceName = $reflected->getShortName();
-        $className = $this->makeClassName($interfaceName);
+        $className = Util::makeClassName($this->interfaceFqn);
         $interfaceProperty = lcfirst($interfaceName);
 
         // TODO: Inject a factory into class then create methods processor through that.
@@ -58,7 +60,7 @@ class AdapterProcessor implements ProcessorInterface
                 '<className>' => $className,
                 '<interfaceName>' => $interfaceName,
                 '<interfaceProperty>' => $interfaceProperty,
-                '<methods>' => $methodsProcessor->generate(true)
+                '<methods>' => $methodsProcessor->process(true)
             ]
         );
 
@@ -66,22 +68,15 @@ class AdapterProcessor implements ProcessorInterface
             return $adapterString;
         }
 
-        $dir = $this->fileLocation . self::DIRECTORY;
+        $dir = $this->fileLocation . Util::DS . self::DIRECTORY;
 
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
 
         return (bool)file_put_contents(
-            $dir . DIRECTORY_SEPARATOR . $className . '.php',
+            $dir . Util::DS . $className . '.php',
             $adapterString
         );
-    }
-    
-    private function makeClassName($interfaceName)
-    {
-        $interfaceFqnParts = explode('\\', $this->interfaceFqn);
-        
-        return reset($interfaceFqnParts) . str_replace('Interface', '', $interfaceName);
     }
 }

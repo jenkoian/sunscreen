@@ -9,5 +9,5 @@ interface ProcessorInterface
      *
      * @return string|bool
      */
-    public function generate($asString = false);
+    public function process($asString = false);
 }

@@ -10,17 +10,24 @@ class InterfaceMethodsProcessor implements ProcessorInterface
     private $methods;
 
     /**
-     * @param array $methods
+     * @var bool
      */
-    public function __construct(array $methods)
+    private $isInterface;
+
+    /**
+     * @param array $methods
+     * @param bool $isInterface
+     */
+    public function __construct(array $methods, $isInterface = true)
     {
         $this->methods = $methods;
+        $this->isInterface = $isInterface;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function generate($asString = false)
+    public function process($asString = false)
     {
         $methodsString = '';
         /** @var \ReflectionMethod $method */
@@ -35,11 +42,12 @@ class InterfaceMethodsProcessor implements ProcessorInterface
             foreach ($method->getParameters() as $parameter) {
                 $params[] = '$' . $parameter->getName();
             }
-
+            
             $methodsString .= strtr(
                 file_get_contents(__DIR__ . '/../../template/InterfaceMethodsTemplate.tpl'),
                 [
                     '<docBlock>'  => $method->getDocComment(),
+                    '<abstract>' => $method->isAbstract() && !$this->isInterface ? 'abstract ' : '',
                     '<methodName>' => $method->getName(),
                     '<parameters>' => rtrim(implode(', ', $params), ',')
                 ]
@@ -53,7 +61,7 @@ class InterfaceMethodsProcessor implements ProcessorInterface
         if ($asString === true) {
             return $methodsString;   
         }
-        
-        // TODO: Generate file or throw exception?
+
+        throw new \LogicException('Interface methods cannot be generated as a file.');
     }
 }

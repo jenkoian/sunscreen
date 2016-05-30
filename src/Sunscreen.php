@@ -21,7 +21,8 @@ class Sunscreen implements SunscreenInterface
         $mainPackage = $event->getComposer()->getPackage();
         $installedPackage = $event->getOperation()->getPackage();
         $extra = $installedPackage->getExtra();
-        $baseDir = $event->getComposer()->getConfig()->get('vendor-dir') . Util::DS  . '..';
+        $vendorDir = $event->getComposer()->getConfig()->get('vendor-dir');
+        $baseDir = $vendorDir . Util::DS  . '..';
 
         $mainNamespace = Util::extractNamespaceFromPackage($mainPackage);
         $src = Util::extractSourceDirectoryFromPackage($mainPackage);
@@ -34,9 +35,9 @@ class Sunscreen implements SunscreenInterface
             $interfaces = self::configuredInterfaces($extra['sunscreen']);
             $classes = self::configuredClasses($extra['sunscreen']);
         } else {
-            $interfaceGuesser = new InterfaceGuesser();
+            $interfaceGuesser = new InterfaceGuesser($vendorDir);
             $interfaces = $interfaceGuesser->guess($installedPackage);
-            $classGuesser = new AbstractClassGuesser();
+            $classGuesser = new AbstractClassGuesser($vendorDir);
             $classes = $classGuesser->guess($installedPackage);
         }
 
@@ -48,20 +49,20 @@ class Sunscreen implements SunscreenInterface
         if (!empty($interfaces)) {
             foreach ($interfaces as $interface) {
                 $interfaceProcessor = new InterfaceProcessor($interface, $mainNamespace, $baseDir . Util::DS . $src);
-                $interfaceProcessor->generate();
+                $interfaceProcessor->process();
 
                 $adapterProcessor = new AdapterProcessor($interface, $mainNamespace, $baseDir . Util::DS . $src);
-                $adapterProcessor->generate();
+                $adapterProcessor->process();
             }
         }
 
         if (!empty($classes)) {
             foreach ($classes as $class) {
                 $classProcessor = new ClassProcessor($class, $mainNamespace, $baseDir . Util::DS . $src);
-                $classProcessor->generate();
+                $classProcessor->process();
 
                 $adapterProcessor = new AdapterProcessor($class, $mainNamespace, $baseDir . Util::DS . $src);
-                $adapterProcessor->generate();
+                $adapterProcessor->process();
             }
         }
     }

@@ -2,6 +2,8 @@
 
 namespace Jenko\Sunscreen\Processor;
 
+use Jenko\Sunscreen\Util;
+
 class ClassProcessor implements ProcessorInterface 
 {
     /**
@@ -39,15 +41,15 @@ class ClassProcessor implements ProcessorInterface
     /**
      * {@inheritdoc}
      */
-    public function generate($asString = false)
+    public function process($asString = false)
     {
         $reflected = new \ReflectionClass($this->classFqn);
         
         // TODO: Inject a factory into class then create methods processor through that.
-        $methodsProcessor = new InterfaceMethodsProcessor($reflected->getMethods());
+        $methodsProcessor = new InterfaceMethodsProcessor($reflected->getMethods(), false);
 
         $class = $reflected->getShortName();
-        $methods = $methodsProcessor->generate();
+        $methods = $methodsProcessor->process(true);
 
         $classString = strtr(
             file_get_contents(__DIR__ . '/../../template/ClassTemplate.tpl'),
@@ -61,15 +63,15 @@ class ClassProcessor implements ProcessorInterface
         if ($asString === true) {
             return $classString;
         }
-        
-        $dir = $this->fileLocation . self::DIRECTORY;
+
+        $dir = $this->fileLocation . Util::DS . self::DIRECTORY;
 
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }        
 
         return (bool)file_put_contents(
-            $dir . DIRECTORY_SEPARATOR . $class . '.php',
+            $dir . Util::DS . $class . '.php',
             $classString
         );
     }
