@@ -11,7 +11,7 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "php": ">=5.4,<8.0-DEV"
+        "php": ">=5.6,<8.0-DEV"
     },
     "require-dev": {
         "composer/composer": "~1.1",
