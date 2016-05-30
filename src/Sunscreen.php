@@ -22,13 +22,21 @@ class Sunscreen implements SunscreenInterface
         $installedPackage = $event->getOperation()->getPackage();
         $extra = $installedPackage->getExtra();
         $io = $event->getIO();
+
+        if ($installedPackage->isDev()) {
+            if ($io->isVeryVerbose()) {
+                $io->write('Sunscreen: Ignoring dev dependency.' . "\n");
+            }
+            return;
+        }
+
         $vendorDir = $event->getComposer()->getConfig()->get('vendor-dir');
         $baseDir = $vendorDir . Util::DS  . '..';
 
         $mainNamespace = Util::extractNamespaceFromPackage($mainPackage);
         $src = Util::extractSourceDirectoryFromPackage($mainPackage);
         if (empty($mainNamespace)) {
-            $io->writeError('Sunscreen: Main Namespace not found.');
+            $io->writeError('Sunscreen: Main Namespace not found.' . "\n");
             return;
         }
 
@@ -54,8 +62,16 @@ class Sunscreen implements SunscreenInterface
                 $interfaceProcessor = new InterfaceProcessor($interface, $mainNamespace, $baseDir . Util::DS . $src);
                 $interfaceProcessor->process();
 
+                if ($io->isVeryVerbose()) {
+                    $io->write('Sunscreen: Interface created.' . "\n");
+                }
+
                 $adapterProcessor = new AdapterProcessor($interface, $mainNamespace, $baseDir . Util::DS . $src);
                 $adapterProcessor->process();
+
+                if ($io->isVeryVerbose()) {
+                    $io->write('Sunscreen: Adapter created.' . "\n");
+                }
             }
         }
 
@@ -64,8 +80,16 @@ class Sunscreen implements SunscreenInterface
                 $classProcessor = new ClassProcessor($class, $mainNamespace, $baseDir . Util::DS . $src);
                 $classProcessor->process();
 
+                if ($io->isVeryVerbose()) {
+                    $io->write('Sunscreen: Class created.' . "\n");
+                }
+
                 $adapterProcessor = new AdapterProcessor($class, $mainNamespace, $baseDir . Util::DS . $src);
                 $adapterProcessor->process();
+
+                if ($io->isVeryVerbose()) {
+                    $io->write('Sunscreen: Adapter created.' . "\n");
+                }
             }
         }
     }
