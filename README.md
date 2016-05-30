@@ -42,13 +42,15 @@ the following:
 ```json
     "extra": {
         "sunscreen": {
-            "interface": "Acme\\Package\\MyPackageInterface"
+            "interfaces": [
+                "Acme\\Package\\MyPackageInterface"
+            ]
         }
     }
 ```
 
-Armed with this information about a package it will use this to generate an interface/class and an adapter from the configured 
-interface/class.
+Armed with this information about a package it will use this to generate interfaces/classes and an adapter from the configured
+interfaces/classes.
 
 Yes, this means that the package will need to have this extra bit of config in their `composer.json` (get those PRs in!). 
 However, if such config doesn't exist it will attempt to guess the main interface by assuming a package has an interface named
@@ -61,7 +63,9 @@ As mentioned above, simply add the following bit of config to the `composer.json
 ```json
     "extra": {
         "sunscreen": {
-            "interface": "Acme\\Package\\MyPackageInterface"
+            "interfaces": [
+                "Acme\\Package\\MyPackageInterface"
+            ]
         }
     }
 ```
@@ -71,7 +75,9 @@ Or if you don't have a main interface but a class, it would be:
 ```json
     "extra": {
         "sunscreen": {
-            "class": "Acme\\Package\\MyPackage"
+            "classes": [
+                "Acme\\Package\\MyPackage"
+            ]
         }
     }
 ```

@@ -21,13 +21,14 @@ class Sunscreen implements SunscreenInterface
         $mainPackage = $event->getComposer()->getPackage();
         $installedPackage = $event->getOperation()->getPackage();
         $extra = $installedPackage->getExtra();
+        $io = $event->getIO();
         $vendorDir = $event->getComposer()->getConfig()->get('vendor-dir');
         $baseDir = $vendorDir . Util::DS  . '..';
 
         $mainNamespace = Util::extractNamespaceFromPackage($mainPackage);
         $src = Util::extractSourceDirectoryFromPackage($mainPackage);
         if (empty($mainNamespace)) {
-            // TODO: Write to console that no namespace was found.
+            $io->writeError('Sunscreen: Main Namespace not found.');
             return;
         }
 
@@ -42,7 +43,9 @@ class Sunscreen implements SunscreenInterface
         }
 
         if (empty($interfaces) && empty($classes)) {
-            // TODO: Write to console that no main interface/class could be identified.
+            if ($io->isVerbose()) {
+                $io->write('Sunscreen: No interfaces or classes could be found.' . "\n");
+            }
             return;
         }
 
