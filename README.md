@@ -18,6 +18,8 @@ The advice here would be to define your interface as being whatever *you* need a
 fact that is desired usage for wrapping dependencies in this way. This library won't do that, it will just use the interface/class 
 as is. Therefore, once this library has done it's thing you should definitely review and change/update the interface as per your needs.
 
+![Sunscreen in action](sunscreen.gif)
+
 ## Installation
 
 ```
@@ -52,9 +54,11 @@ the following:
 Armed with this information about a package it will use this to generate interfaces/classes and an adapter from the configured
 interfaces/classes.
 
-Yes, this means that the package will need to have this extra bit of config in their `composer.json` (get those PRs in!). 
-However, if such config doesn't exist it will attempt to guess the main interface by assuming a package has an interface named
-`PackageNameInterface` in the main source directory. This is obviously quite unreliable though and the composer config is favoured.
+If the configuration doesn't exist for the package it will attempt to load configuration from a pool of preconfigured json files.
+
+If it still can't find any configuration it will attempt to guess the main interface by assuming a package has an interface named
+`PackageNameInterface` or an abstract class `AbstractPackageName` in the main source directory. 
+This is obviously quite unreliable though and the config is favoured.
 
 ## Sounds great, I author a package, what can I do?
 
@@ -82,4 +86,6 @@ Or if you don't have a main interface but a class, it would be:
     }
 ```
 
+## Ok my favourite package isn't merging my PR, what now?
 
+Create a PR to this repository with the preconfigured json for your dependency.

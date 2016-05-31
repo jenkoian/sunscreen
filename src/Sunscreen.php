@@ -12,6 +12,11 @@ use Jenko\Sunscreen\Processor\InterfaceProcessor;
 class Sunscreen implements SunscreenInterface
 {
     /**
+     * @var string
+     */
+    const PRECONFIGURED_DIR = 'preconfigured';
+
+    /**
      * @param PackageEvent $event
      *
      * @return mixed|void
@@ -43,6 +48,9 @@ class Sunscreen implements SunscreenInterface
         if (isset($extra['sunscreen'])) {
             $interfaces = self::configuredInterfaces($extra['sunscreen']);
             $classes = self::configuredClasses($extra['sunscreen']);
+        } elseif ($preconfiguredExtra = self::findPreconfiguredExtra($installedPackage->getName())) {
+            $interfaces = self::configuredInterfaces($preconfiguredExtra['sunscreen']);
+            $classes = self::configuredClasses($preconfiguredExtra['sunscreen']);
         } else {
             $interfaceGuesser = new InterfaceGuesser($vendorDir);
             $interfaces = $interfaceGuesser->guess($installedPackage);
@@ -58,39 +66,11 @@ class Sunscreen implements SunscreenInterface
         }
 
         if (!empty($interfaces)) {
-            foreach ($interfaces as $interface) {
-                $interfaceProcessor = new InterfaceProcessor($interface, $mainNamespace, $baseDir . Util::DS . $src);
-                $interfaceProcessor->process();
-
-                if ($io->isVeryVerbose()) {
-                    $io->write('Sunscreen: Interface created.' . "\n");
-                }
-
-                $adapterProcessor = new AdapterProcessor($interface, $mainNamespace, $baseDir . Util::DS . $src);
-                $adapterProcessor->process();
-
-                if ($io->isVeryVerbose()) {
-                    $io->write('Sunscreen: Adapter created.' . "\n");
-                }
-            }
+            self::processInterfaces($interfaces, $mainNamespace, $baseDir, $src, $io);
         }
 
         if (!empty($classes)) {
-            foreach ($classes as $class) {
-                $classProcessor = new ClassProcessor($class, $mainNamespace, $baseDir . Util::DS . $src);
-                $classProcessor->process();
-
-                if ($io->isVeryVerbose()) {
-                    $io->write('Sunscreen: Class created.' . "\n");
-                }
-
-                $adapterProcessor = new AdapterProcessor($class, $mainNamespace, $baseDir . Util::DS . $src);
-                $adapterProcessor->process();
-
-                if ($io->isVeryVerbose()) {
-                    $io->write('Sunscreen: Adapter created.' . "\n");
-                }
-            }
+            self::processClasses($classes, $mainNamespace, $baseDir, $src, $io);
         }
     }
 
@@ -118,6 +98,76 @@ class Sunscreen implements SunscreenInterface
         }
 
         return [];
+    }
+
+    /**
+     * @param array $interfaces
+     * @param string $mainNamespace
+     * @param string $baseDir
+     * @param string $src
+     * @param IO $io
+     */
+    private static function processInterfaces(array $interfaces, $mainNamespace, $baseDir, $src, $io)
+    {
+        foreach ($interfaces as $interface) {
+            $interfaceProcessor = new InterfaceProcessor($interface, $mainNamespace, $baseDir . Util::DS . $src);
+            $interfaceProcessor->process();
+
+            if ($io->isVeryVerbose()) {
+                $io->write('Sunscreen: Interface created.' . "\n");
+            }
+
+            $adapterProcessor = new AdapterProcessor($interface, $mainNamespace, $baseDir . Util::DS . $src);
+            $adapterProcessor->process();
+
+            if ($io->isVeryVerbose()) {
+                $io->write('Sunscreen: Adapter created.' . "\n");
+            }
+        }
+    }
+
+    /**
+     * @param array $classes
+     * @param string $mainNamespace
+     * @param string $baseDir
+     * @param string $src
+     * @param IO $io
+     */
+    private static function processClasses(array $classes, $mainNamespace, $baseDir, $src, $io)
+    {
+        foreach ($classes as $class) {
+            $classProcessor = new ClassProcessor($class, $mainNamespace, $baseDir . Util::DS . $src);
+            $classProcessor->process();
+
+            if ($io->isVeryVerbose()) {
+                $io->write('Sunscreen: Class created.' . "\n");
+            }
+
+            $adapterProcessor = new AdapterProcessor($class, $mainNamespace, $baseDir . Util::DS . $src);
+            $adapterProcessor->process();
+
+            if ($io->isVeryVerbose()) {
+                $io->write('Sunscreen: Adapter created.' . "\n");
+            }
+        }
+    }
+
+    /**
+     * @param string $packageName
+     * @return null
+     */
+    private static function findPreconfiguredExtra($packageName)
+    {
+        list($dirName, $filename) = explode('/', $packageName);
+        $filePath = __DIR__ . Util::DS . '..' . Util::DS . self::PRECONFIGURED_DIR . Util::DS . $dirName . Util::DS . $filename . '.json';
+
+        if (!is_file($filePath)) {
+            return null;
+        }
+
+        $jsonDecoded = json_decode(file_get_contents($filePath), true);
+
+        return isset($jsonDecoded['extra']) ? $jsonDecoded['extra'] : null;
     }
 }
 

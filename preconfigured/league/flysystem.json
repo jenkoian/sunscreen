@@ -1,0 +1,9 @@
+{
+    "extra": {
+        "sunscreen": {
+            "interfaces": [
+                "League\\Flysystem\\FilesystemInterface"
+            ]
+        }
+    }
+}
