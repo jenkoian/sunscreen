@@ -10,5 +10,5 @@ interface SunscreenInterface
      * @param PackageEvent $event
      * @return mixed
      */
-    public function onPostPackageInstall(PackageEvent $event);
+    public static function postPackageInstall(PackageEvent $event);
 }

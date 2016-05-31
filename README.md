@@ -26,6 +26,16 @@ as is. Therefore, once this library has done it's thing you should definitely re
 composer require jenko/sunscreen --dev
 ```
 
+Then add this to your `composer.json`:
+
+```json
+    "scripts": {
+        "post-package-install": [
+            "Jenko\\Sunscreen\\Sunscreen::postPackageInstall"
+        ]
+    }
+```
+
 ## How it works
 
 The script will kick in after a package is installed via composer. It will check that package's composer file and look for 

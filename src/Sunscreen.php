@@ -2,19 +2,14 @@
 
 namespace Jenko\Sunscreen;
 
-use Composer\Composer;
-use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Installer\PackageEvent;
-use Composer\Installer\PackageEvents;
-use Composer\IO\IOInterface;
-use Composer\Plugin\PluginInterface;
 use Jenko\Sunscreen\Guesser\AbstractClassGuesser;
 use Jenko\Sunscreen\Guesser\InterfaceGuesser;
 use Jenko\Sunscreen\Processor\AdapterProcessor;
 use Jenko\Sunscreen\Processor\ClassProcessor;
 use Jenko\Sunscreen\Processor\InterfaceProcessor;
 
-class Sunscreen implements PluginInterface, EventSubscriberInterface, SunscreenInterface
+class Sunscreen implements SunscreenInterface
 {
     /**
      * @var string
@@ -22,69 +17,40 @@ class Sunscreen implements PluginInterface, EventSubscriberInterface, SunscreenI
     const PRECONFIGURED_DIR = 'preconfigured';
 
     /**
-     * @var Composer
-     */
-    protected $composer;
-
-    /**
-     * @var IOInterface
-     */
-    protected $io;
-
-    /**
-     * @param Composer $composer
-     * @param IOInterface $io
-     */
-    public function activate(Composer $composer, IOInterface $io)
-    {
-        $this->composer = $composer;
-        $this->io = $io;
-    }
-
-    /**
-     * @return array
-     */
-    public static function getSubscribedEvents()
-    {
-        return [
-            PackageEvents::POST_PACKAGE_INSTALL => 'onPostPackageInstall'
-        ];
-    }
-
-    /**
      * @param PackageEvent $event
      *
      * @return mixed|void
      */
-    public function onPostPackageInstall(PackageEvent $event)
+    public static function postPackageInstall(PackageEvent $event)
     {
-        $mainPackage = $this->composer->getPackage();
+        $mainPackage = $event->getComposer()->getPackage();
         $installedPackage = $event->getOperation()->getPackage();
         $extra = $installedPackage->getExtra();
+        $io = $event->getIO();
 
         if ($installedPackage->isDev()) {
-            if ($this->io->isVeryVerbose()) {
-                $this->io->write('Sunscreen: Ignoring dev dependency.' . "\n");
+            if ($io->isVeryVerbose()) {
+                $io->write('Sunscreen: Ignoring dev dependency.' . "\n");
             }
             return;
         }
 
-        $vendorDir = $this->composer->getConfig()->get('vendor-dir');
+        $vendorDir = $event->getComposer()->getConfig()->get('vendor-dir');
         $baseDir = $vendorDir . Util::DS  . '..';
 
         $mainNamespace = Util::extractNamespaceFromPackage($mainPackage);
         $src = Util::extractSourceDirectoryFromPackage($mainPackage);
         if (empty($mainNamespace)) {
-            $this->io->writeError('Sunscreen: Main Namespace not found.' . "\n");
+            $io->writeError('Sunscreen: Main Namespace not found.' . "\n");
             return;
         }
 
         if (isset($extra['sunscreen'])) {
-            $interfaces = $this->configuredInterfaces($extra['sunscreen']);
-            $classes = $this->configuredClasses($extra['sunscreen']);
-        } elseif ($preconfiguredExtra = $this->findPreconfiguredExtra($installedPackage->getName())) {
-            $interfaces = $this->configuredInterfaces($preconfiguredExtra['sunscreen']);
-            $classes = $this->configuredClasses($preconfiguredExtra['sunscreen']);
+            $interfaces = self::configuredInterfaces($extra['sunscreen']);
+            $classes = self::configuredClasses($extra['sunscreen']);
+        } elseif ($preconfiguredExtra = self::findPreconfiguredExtra($installedPackage->getName())) {
+            $interfaces = self::configuredInterfaces($preconfiguredExtra['sunscreen']);
+            $classes = self::configuredClasses($preconfiguredExtra['sunscreen']);
         } else {
             $interfaceGuesser = new InterfaceGuesser($vendorDir);
             $interfaces = $interfaceGuesser->guess($installedPackage);
@@ -93,18 +59,18 @@ class Sunscreen implements PluginInterface, EventSubscriberInterface, SunscreenI
         }
 
         if (empty($interfaces) && empty($classes)) {
-            if ($this->io->isVerbose()) {
-                $this->io->write('Sunscreen: No interfaces or classes could be found.' . "\n");
+            if ($io->isVerbose()) {
+                $io->write('Sunscreen: No interfaces or classes could be found.' . "\n");
             }
             return;
         }
 
         if (!empty($interfaces)) {
-            $this->processInterfaces($interfaces, $mainNamespace, $baseDir, $src);
+            self::processInterfaces($interfaces, $mainNamespace, $baseDir, $src, $io);
         }
 
         if (!empty($classes)) {
-            $this->processClasses($classes, $mainNamespace, $baseDir, $src);
+            self::processClasses($classes, $mainNamespace, $baseDir, $src, $io);
         }
     }
 
@@ -112,7 +78,7 @@ class Sunscreen implements PluginInterface, EventSubscriberInterface, SunscreenI
      * @param $sunscreenConfig
      * @return array ['FQN']
      */
-    private function configuredInterfaces($sunscreenConfig)
+    private static function configuredInterfaces($sunscreenConfig)
     {
         if (isset($sunscreenConfig['interfaces'])) {
             return $sunscreenConfig['interfaces'];
@@ -125,7 +91,7 @@ class Sunscreen implements PluginInterface, EventSubscriberInterface, SunscreenI
      * @param $sunscreenConfig
      * @return array ['FQN']
      */
-    private function configuredClasses($sunscreenConfig)
+    private static function configuredClasses($sunscreenConfig)
     {
         if (isset($sunscreenConfig['classes'])) {
             return $sunscreenConfig['classes'];
@@ -139,22 +105,23 @@ class Sunscreen implements PluginInterface, EventSubscriberInterface, SunscreenI
      * @param string $mainNamespace
      * @param string $baseDir
      * @param string $src
+     * @param IO $io
      */
-    private function processInterfaces(array $interfaces, $mainNamespace, $baseDir, $src)
+    private static function processInterfaces(array $interfaces, $mainNamespace, $baseDir, $src, $io)
     {
         foreach ($interfaces as $interface) {
             $interfaceProcessor = new InterfaceProcessor($interface, $mainNamespace, $baseDir . Util::DS . $src);
             $interfaceProcessor->process();
 
-            if ($this->io->isVeryVerbose()) {
-                $this->io->write('Sunscreen: Interface created.' . "\n");
+            if ($io->isVeryVerbose()) {
+                $io->write('Sunscreen: Interface created.' . "\n");
             }
 
             $adapterProcessor = new AdapterProcessor($interface, $mainNamespace, $baseDir . Util::DS . $src);
             $adapterProcessor->process();
 
-            if ($this->io->isVeryVerbose()) {
-                $this->io->write('Sunscreen: Adapter created.' . "\n");
+            if ($io->isVeryVerbose()) {
+                $io->write('Sunscreen: Adapter created.' . "\n");
             }
         }
     }
@@ -164,22 +131,23 @@ class Sunscreen implements PluginInterface, EventSubscriberInterface, SunscreenI
      * @param string $mainNamespace
      * @param string $baseDir
      * @param string $src
+     * @param IO $io
      */
-    private function processClasses(array $classes, $mainNamespace, $baseDir, $src)
+    private static function processClasses(array $classes, $mainNamespace, $baseDir, $src, $io)
     {
         foreach ($classes as $class) {
             $classProcessor = new ClassProcessor($class, $mainNamespace, $baseDir . Util::DS . $src);
             $classProcessor->process();
 
-            if ($this->io->isVeryVerbose()) {
-                $this->io->write('Sunscreen: Class created.' . "\n");
+            if ($io->isVeryVerbose()) {
+                $io->write('Sunscreen: Class created.' . "\n");
             }
 
             $adapterProcessor = new AdapterProcessor($class, $mainNamespace, $baseDir . Util::DS . $src);
             $adapterProcessor->process();
 
-            if ($this->io->isVeryVerbose()) {
-                $this->io->write('Sunscreen: Adapter created.' . "\n");
+            if ($io->isVeryVerbose()) {
+                $io->write('Sunscreen: Adapter created.' . "\n");
             }
         }
     }
@@ -188,7 +156,7 @@ class Sunscreen implements PluginInterface, EventSubscriberInterface, SunscreenI
      * @param string $packageName
      * @return null
      */
-    private function findPreconfiguredExtra($packageName)
+    private static function findPreconfiguredExtra($packageName)
     {
         list($dirName, $filename) = explode('/', $packageName);
         $filePath = __DIR__ . Util::DS . '..' . Util::DS . self::PRECONFIGURED_DIR . Util::DS . $dirName . Util::DS . $filename . '.json';
