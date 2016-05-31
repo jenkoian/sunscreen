@@ -1,7 +1,7 @@
 {
     "name": "jenko/sunscreen",
     "description": "Protecting your web app from the harmful rays of external dependencies.",
-    "type": "library",
+    "type": "composer-plugin",
     "license": "MIT",
     "authors": [
         {
@@ -11,17 +11,13 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "php": ">=5.6,<8.0-DEV"
+        "php": ">=5.6,<8.0-DEV",
+        "composer-plugin-api": "^1.0"
     },
     "require-dev": {
-        "composer/composer": "~1.1",
         "phpunit/phpunit": "~5.3",
-        "etsy/phpunit-extensions": "0.7.*"
-    },
-    "scripts": {
-        "post-package-install": [
-            "Jenko\\Sunscreen\\Sunscreen::postPackageInstall"
-        ]
+        "etsy/phpunit-extensions": "0.7.*",
+        "composer/composer": "^1.1"
     },
     "autoload": {
         "psr-4": {"Jenko\\Sunscreen\\": "src"}
@@ -30,6 +26,7 @@
         "psr-4": {"Jenko\\Sunscreen\\Tests\\": "tests"}
     },
     "extra": {
+        "class": "Jenko\\Sunscreen\\Sunscreen",
         "sunscreen": {
             "interfaces": [
                 "Jenko\\Sunscreen\\SunscreenInterface"
