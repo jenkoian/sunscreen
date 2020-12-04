@@ -4,8 +4,9 @@ namespace Jenko\Sunscreen\Tests;
 
 use Composer\Package\Package;
 use Jenko\Sunscreen\Util;
+use PHPUnit\Framework\TestCase;
 
-class UtilTest extends \PHPUnit_Framework_TestCase
+class UtilTest extends TestCase
 {
     /**
      * @dataProvider getAutoloadsAndExpectedNamespaces

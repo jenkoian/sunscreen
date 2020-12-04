@@ -3,10 +3,14 @@
 namespace Jenko\Sunscreen\Tests\Processor;
 
 use Jenko\Sunscreen\Processor\AdapterProcessor;
+use Jenko\Sunscreen\Tests\CustomAssertionsTrait;
 use Jenko\Sunscreen\Util;
+use PHPUnit\Framework\TestCase;
 
-class AdapterProcessorTest extends \PHPUnit_Framework_TestCase
+class AdapterProcessorTest extends TestCase
 {
+    use CustomAssertionsTrait;
+
     /**
      * @dataProvider getInterfaceAndExpectedStrings
      *
@@ -20,7 +24,7 @@ class AdapterProcessorTest extends \PHPUnit_Framework_TestCase
 
         $processor = new AdapterProcessor($interfaceFqn, $namespace, $fileLocation);
 
-        \PHPUnit_Extensions_Assert_More::assertStringMatchIgnoreWhitespace($expectedAdapterString, $processor->process(true));
+        self::assertStringMatchIgnoreWhitespace($expectedAdapterString, $processor->process(true));
     }
 
     public function getInterfaceAndExpectedStrings()

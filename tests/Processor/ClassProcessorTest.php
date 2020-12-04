@@ -3,10 +3,14 @@
 namespace Jenko\Sunscreen\Tests\Processor;
 
 use Jenko\Sunscreen\Processor\ClassProcessor;
+use Jenko\Sunscreen\Tests\CustomAssertionsTrait;
 use Jenko\Sunscreen\Util;
+use PHPUnit\Framework\TestCase;
 
-class ClassProcessorTest extends \PHPUnit_Framework_TestCase
+class ClassProcessorTest extends TestCase
 {
+    use CustomAssertionsTrait;
+
     /**
      * @dataProvider getClassAndExpectedStrings
      *
@@ -20,7 +24,7 @@ class ClassProcessorTest extends \PHPUnit_Framework_TestCase
 
         $processor = new ClassProcessor($classFqn, $namespace, $fileLocation);
 
-        \PHPUnit_Extensions_Assert_More::assertStringMatchIgnoreWhitespace(
+        self::assertStringMatchIgnoreWhitespace(
             $expectedClassString,
             $processor->process(true)
         );

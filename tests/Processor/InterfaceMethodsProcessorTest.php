@@ -3,9 +3,13 @@
 namespace Jenko\Sunscreen\Tests\Processor;
 
 use Jenko\Sunscreen\Processor\InterfaceMethodsProcessor;
+use Jenko\Sunscreen\Tests\CustomAssertionsTrait;
+use PHPUnit\Framework\TestCase;
 
-class InterfaceMethodsProcessorTest extends \PHPUnit_Framework_TestCase
+class InterfaceMethodsProcessorTest extends TestCase
 {
+    use CustomAssertionsTrait;
+
     /**
      * @dataProvider getMethodsAndExpectedStrings
      * @param array $methods
@@ -15,7 +19,7 @@ class InterfaceMethodsProcessorTest extends \PHPUnit_Framework_TestCase
     {
         $processor = new InterfaceMethodsProcessor($methods);
 
-        \PHPUnit_Extensions_Assert_More::assertStringMatchIgnoreWhitespace(
+        self::assertStringMatchIgnoreWhitespace(
             $expectedMethodsString,
             $processor->process(true)
         );

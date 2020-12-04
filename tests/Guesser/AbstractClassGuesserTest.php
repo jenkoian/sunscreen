@@ -5,8 +5,9 @@ namespace Jenko\Sunscreen\Tests\Guesser;
 use Composer\Package\Package;
 use Jenko\Sunscreen\Guesser\AbstractClassGuesser;
 use Jenko\Sunscreen\Util;
+use PHPUnit\Framework\TestCase;
 
-class AbstractClassGuesserTest extends \PHPUnit_Framework_TestCase
+class AbstractClassGuesserTest extends TestCase
 {
     /**
      * @dataProvider getAutoloadsAndExpectedClasses
